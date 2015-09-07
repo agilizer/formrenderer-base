@@ -86,12 +86,14 @@ window.FormRenderer = FormRenderer = Backbone.View.extend
         cb()
       error: (xhr) =>
         if !@corsSupported()
-          @$el.
-            find('.fr_loading').
-            html(FormRenderer.t.not_supported.replace(':url', @projectUrl()))
+          @$el.find('.fr_loading').html("""
+            Sorry, your browser does not support this embedded form. Please visit
+            <a href='#{@projectUrl()}?fr_not_supported=t'>#{@projectUrl()}</a> to fill out
+            this form.
+          """)
         else
           @$el.find('.fr_loading').text(
-            "#{FormRenderer.t.error_loading}: \"#{xhr.responseJSON?.error || 'Unknown'}\""
+            "Error loading form: \"#{xhr.responseJSON?.error || 'Unknown'}\""
           )
           @trigger 'errorSaving', xhr
 
@@ -360,6 +362,7 @@ FormRenderer.INPUT_FIELD_TYPES = [
   'time'
   'website'
   'map_marker'
+  'progress'
 ]
 
 FormRenderer.NON_INPUT_FIELD_TYPES = [
@@ -462,15 +465,3 @@ FormRenderer.formatHTML = (unsafeHTML) ->
 
 FormRenderer.toBoolean = (str) ->
   _.contains ['True', 'Yes', 'true', '1', 1, 'yes', true], str
-
-FormRenderer.normalizeNumber = (value, units) ->
-  returnVal = value.
-                replace(/,/g, '').
-                replace(/-/g, '').
-                replace(/^\+/, '').
-                trim()
-
-  if units
-    returnVal = returnVal.replace(new RegExp(units + '$', 'i'), '').trim()
-
-  returnVal

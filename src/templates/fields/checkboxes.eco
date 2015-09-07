@@ -9,9 +9,9 @@
   <div class='fr_option fr_other_option'>
     <label class='control'>
       <input type='checkbox' data-rv-checked='model.value.other_checkbox' />
-      <%= FormRenderer.t.other %>
+      Other
     </label>
 
-    <input type='text' data-rv-show='model.showOther' data-rv-input='model.value.other' placeholder='<%= FormRenderer.t.write_here %>' />
+    <input type='text' data-rv-show='model.showOther' data-rv-input='model.value.other' placeholder='Write your answer here' />
   </div>
 <% end %>

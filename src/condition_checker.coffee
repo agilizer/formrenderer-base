@@ -6,7 +6,7 @@ class FormRenderer.ConditionChecker
     @value.toLowerCase() == @condition.value.toLowerCase()
 
   method_contains: ->
-    @value.toLowerCase().indexOf(@condition.value.toLowerCase()) > -1
+    !!@value.toLowerCase().match(@condition.value.toLowerCase())
 
   method_gt: ->
     parseFloat(@value) > parseFloat(@condition.value)

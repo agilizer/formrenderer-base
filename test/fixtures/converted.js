@@ -12,7 +12,7 @@ Fixtures.Validation = {
     "invalid": ["1", "4.99999", "10.9"]
   },
   "INTEGER": {
-    "valid": ["1", "3,000"],
+    "valid": ["1"],
     "invalid": ["1.2", "1.0"]
   },
   "PRICE": {
@@ -146,7 +146,7 @@ Fixtures.Validation = {
         "field_options": {
           "options": [
             {
-              "label": "bar (baz)",
+              "label": "bar",
               "checked": false
             }
           ]
@@ -155,10 +155,10 @@ Fixtures.Validation = {
       "tests": [
         {
           "in": {
-            "bar (baz)": true,
+            "bar": true,
             "Other": "who"
           },
-          "out": "bar (baz) who"
+          "out": "bar who"
         }
       ]
     },
@@ -289,9 +289,9 @@ Fixtures.Validation = {
       "false": ["as"]
     },
     "contains": {
-      "value": "foo (bar)",
-      "true": ["foo (bar)", "foo (bar) baz"],
-      "false": ["foo bar", "foo (bar"]
+      "value": "foo",
+      "true": ["foobar", "foo"],
+      "false": ["fo"]
     },
     "lt": {
       "value": "12.99",

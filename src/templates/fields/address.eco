@@ -3,7 +3,7 @@
 <% unless format in ['city_state', 'city_state_zip', 'country']: %>
   <div class='fr_grid'>
     <div class='fr_full has_sub_label'>
-      <label class="fr_sub_label"><%= FormRenderer.t.address %></label>
+      <label class="fr_sub_label">Address</label>
       <input type="text"
              id="<%= @getDomId() %>"
              data-rv-input='model.value.street' />
@@ -14,7 +14,7 @@
 <% unless format in ['country']: %>
   <div class='fr_grid'>
     <div class='fr_half has_sub_label'>
-      <label class="fr_sub_label"><%= FormRenderer.t.city %></label>
+      <label class="fr_sub_label">City</label>
       <input type="text"
              data-rv-input='model.value.city' />
     </div>
@@ -22,11 +22,11 @@
     <div class='fr_half has_sub_label'>
       <label class="fr_sub_label">
         <% if @model.get('value.country') == 'US': %>
-          <%= FormRenderer.t.state %>
+          State
         <% else if @model.get('value.country') == 'CA': %>
-          <%= FormRenderer.t.province %>
+          Province
         <% else: %>
-          <%= FormRenderer.t.state_province_region %>
+          State / Province / Region
         <% end %>
       </label>
 
@@ -48,11 +48,7 @@
   <% unless format in ['city_state', 'country']: %>
     <div class='fr_half has_sub_label'>
       <label class="fr_sub_label">
-        <% if @model.get('value.country') == 'US': %>
-          <%= FormRenderer.t.zip_code %>
-        <% else: %>
-          <%= FormRenderer.t.postal_code %>
-        <% end %>
+        <% if @model.get('value.country') == 'US': %>ZIP<% else: %>Postal<% end %> Code
       </label>
       <input type="text"
              data-rv-input='model.value.zipcode' />
@@ -61,7 +57,7 @@
 
   <% unless format in ['city_state', 'city_state_zip']: %>
     <div class='fr_half has_sub_label'>
-      <label class="fr_sub_label"><%= FormRenderer.t.country %></label>
+      <label class="fr_sub_label">Country</label>
       <select data-rv-value='model.value.country' data-width='100%'>
         <% for x in FormRenderer.ORDERED_COUNTRIES: %>
           <option value='<%= x %>'><%= ISOCountryNames[x] || '---' %></option>

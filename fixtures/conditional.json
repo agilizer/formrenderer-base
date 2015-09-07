@@ -25,7 +25,7 @@
         "field_options": {
           "options": [
             {
-              "label": "bar (baz)",
+              "label": "bar",
               "checked": false
             }
           ]
@@ -34,10 +34,10 @@
       "tests": [
         {
           "in": {
-            "bar (baz)": true,
+            "bar": true,
             "Other": "who"
           },
-          "out": "bar (baz) who"
+          "out": "bar who"
         }
       ]
     },
@@ -168,9 +168,9 @@
       "false": ["as"]
     },
     "contains": {
-      "value": "foo (bar)",
-      "true": ["foo (bar)", "foo (bar) baz"],
-      "false": ["foo bar", "foo (bar"]
+      "value": "foo",
+      "true": ["foobar", "foo"],
+      "false": ["fo"]
     },
     "lt": {
       "value": "12.99",

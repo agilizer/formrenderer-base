@@ -164,11 +164,11 @@ FormRenderer.Views.ResponseFieldFile = FormRenderer.Views.ResponseField.extend
     else if e.target.value
       e.target.value.replace(/^.+\\/, '')
     else
-      FormRenderer.t.error_filename
+      'Error reading filename'
 
     @model.set 'value.filename', newFilename, silent: true
     @$el.find('.js-filename').text newFilename
-    @$status.text FormRenderer.t.uploading
+    @$status.text 'Uploading...'
     @doUpload()
 
   doUpload: ->
@@ -188,7 +188,7 @@ FormRenderer.Views.ResponseFieldFile = FormRenderer.Views.ResponseField.extend
       headers: @form_renderer.serverHeaders
       dataType: 'json'
       uploadProgress: (_, __, ___, percentComplete) =>
-        @$status.text(if percentComplete == 100 then FormRenderer.t.finishing_up else "#{FormRenderer.t.uploading} (#{percentComplete}%)")
+        @$status.text(if percentComplete == 100 then 'Finishing up...' else "Uploading... (#{percentComplete}%)")
       complete: =>
         @form_renderer.requests -= 1
         $tmpForm.remove()
@@ -197,7 +197,7 @@ FormRenderer.Views.ResponseFieldFile = FormRenderer.Views.ResponseField.extend
         @render()
       error: (data) =>
         errorText = data.responseJSON?.errors
-        @$status.text(if errorText then "#{FormRenderer.t.error}: #{errorText}" else FormRenderer.t.error)
+        @$status.text(if errorText then "Error: #{errorText}" else 'Error')
         @$status.addClass('fr_error')
         setTimeout =>
           @render()
@@ -249,7 +249,6 @@ FormRenderer.Views.ResponseFieldMapMarker = FormRenderer.Views.ResponseField.ext
         lng: center.lng.toFixed(7)
 
   enable: ->
-    return unless @map
     @map.addLayer(@marker)
     @$cover.hide()
     @_onMove()
@@ -272,7 +271,12 @@ FormRenderer.Views.ResponseFieldPhone = FormRenderer.Views.ResponseField.extend
     if @model.get('field_options.phone_format') == 'us'
       '(xxx) xxx-xxxx'
 
-for i in _.without(FormRenderer.INPUT_FIELD_TYPES, 'address', 'table', 'file', 'map_marker', 'price', 'phone')
+
+FormRenderer.Views.ResponseFieldProgress = FormRenderer.Views.ResponseField.extend
+  field_type: 'progress'
+
+
+for i in _.without(FormRenderer.INPUT_FIELD_TYPES, 'address', 'table', 'file', 'map_marker', 'price', 'phone', 'progress')
   FormRenderer.Views["ResponseField#{_str.classify(i)}"] = FormRenderer.Views.ResponseField.extend
     field_type: i
 

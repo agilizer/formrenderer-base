@@ -8,6 +8,20 @@ Fixtures.RESPONSE_FIELD = {
 
 Fixtures.KITCHEN_SINK_FORM = [
   {
+    id: 350,
+    form_id: 5,
+    label: "Progress",
+    field_options: {},
+    required: true,
+    blind: true,
+    admin_only: false,
+    value:'5',
+    created_at: "2014-08-22T20:50:37.152Z",
+    updated_at: "2014-08-22T20:50:37.152Z",
+    field_type: "progress",
+    cid: 'asdfasfasdfdf'
+  },
+  {
     id: 35,
     form_id: 5,
     label: "Text",
@@ -15,10 +29,11 @@ Fixtures.KITCHEN_SINK_FORM = [
     required: true,
     blind: true,
     admin_only: false,
+    value:'my value is text',
     created_at: "2014-08-22T20:50:37.152Z",
     updated_at: "2014-08-22T20:50:37.152Z",
     field_type: "text",
-    cid: null
+    cid: '12333333aassas'
   }, {
     id: 36,
     form_id: 5,
@@ -35,287 +50,6 @@ Fixtures.KITCHEN_SINK_FORM = [
     created_at: "2014-08-22T20:50:37.169Z",
     updated_at: "2014-08-22T20:50:37.169Z",
     field_type: "paragraph",
-    cid: null
-  }, {
-    id: 37,
-    form_id: 5,
-    label: "Checkboxes",
-    field_options: {
-      options: [
-        {
-          checked: "false",
-          label: "Choice #1 (yas)"
-        }, {
-          checked: "false",
-          label: "Choice #2"
-        }
-      ],
-      required: true
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.187Z",
-    updated_at: "2014-08-22T20:50:37.187Z",
-    field_type: "checkboxes",
-    cid: null
-  }, {
-    id: 38,
-    form_id: 5,
-    label: "THE SECTION!",
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.217Z",
-    updated_at: "2014-08-22T20:50:37.217Z",
-    field_type: "section_break",
-    cid: null
-  }, {
-    id: 100,
-    form_id: 5,
-    label: "",
-    field_options: {},
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.217Z",
-    updated_at: "2014-08-22T20:50:37.217Z",
-    field_type: "page_break",
-    cid: null
-  }, {
-    id: 101,
-    form_id: 5,
-    label: "New page",
-    field_options: {
-      description: "hey hey hey."
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.217Z",
-    updated_at: "2014-08-22T20:50:37.217Z",
-    field_type: "section_break",
-    cid: null
-  }, {
-    id: 102,
-    form_id: 5,
-    label: "",
-    field_options: {
-      description: "Howdyhowdyhowdy"
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.217Z",
-    updated_at: "2014-08-22T20:50:37.217Z",
-    field_type: "block_of_text",
-    cid: null
-  }, {
-    id: 39,
-    form_id: 5,
-    label: "Radio",
-    field_options: {
-      options: [
-        {
-          checked: "false",
-          label: "Choice #1"
-        }, {
-          checked: "false",
-          label: "Choice #2"
-        }
-      ],
-      required: true
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.235Z",
-    updated_at: "2014-08-22T20:50:37.235Z",
-    field_type: "radio",
-    cid: null
-  }, {
-    id: 40,
-    form_id: 5,
-    label: "Dropdown",
-    field_options: {
-      options: [
-        {
-          checked: "false",
-          label: "Choice #1"
-        }, {
-          checked: "false",
-          label: "Choice #2"
-        }
-      ],
-      required: true,
-      include_blank_option: true
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.259Z",
-    updated_at: "2014-08-22T20:50:37.259Z",
-    field_type: "dropdown",
-    cid: null
-  }, {
-    id: 41,
-    form_id: 5,
-    label: "Price",
-    field_options: {
-      required: true
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.284Z",
-    updated_at: "2014-08-22T20:50:37.284Z",
-    field_type: "price",
-    cid: null
-  }, {
-    id: 42,
-    form_id: 5,
-    label: "Number",
-    field_options: {
-      required: true,
-      units: "things"
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.300Z",
-    updated_at: "2014-08-22T20:50:37.300Z",
-    field_type: "number",
-    cid: null
-  }, {
-    id: 43,
-    form_id: 5,
-    label: "Date",
-    field_options: {
-      required: true
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.319Z",
-    updated_at: "2014-08-22T20:50:37.319Z",
-    field_type: "date",
-    cid: null
-  }, {
-    id: 44,
-    form_id: 5,
-    label: "Time",
-    field_options: {
-      required: true
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.336Z",
-    updated_at: "2014-08-22T20:50:37.336Z",
-    field_type: "time",
-    cid: null
-  }, {
-    id: 45,
-    form_id: 5,
-    label: "Website",
-    field_options: {
-      required: true
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.456Z",
-    updated_at: "2014-08-22T20:50:37.456Z",
-    field_type: "website",
-    cid: null
-  }, {
-    id: 46,
-    form_id: 5,
-    label: "File",
-    field_options: {
-      required: true
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.473Z",
-    updated_at: "2014-08-22T20:50:37.473Z",
-    field_type: "file",
-    cid: null
-  }, {
-    id: 47,
-    form_id: 5,
-    label: "Email",
-    field_options: {
-      required: true
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.491Z",
-    updated_at: "2014-08-22T20:50:37.491Z",
-    field_type: "email",
-    cid: null
-  }, {
-    id: 48,
-    form_id: 5,
-    label: "Address",
-    field_options: {
-      required: true
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.508Z",
-    updated_at: "2014-08-22T20:50:37.508Z",
-    field_type: "address",
-    cid: null
-  }, {
-    id: 49,
-    form_id: 5,
-    label: "Table",
-    field_options: {
-      columns: [
-        {
-          label: "column one"
-        }, {
-          label: "column two"
-        }
-      ],
-      minrows: "2"
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.524Z",
-    updated_at: "2014-08-22T20:50:37.524Z",
-    field_type: "table",
-    cid: null
-  }, {
-    id: 50,
-    form_id: 5,
-    label: "MapMarker",
-    field_options: {},
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.547Z",
-    updated_at: "2014-08-22T20:50:37.547Z",
-    field_type: "map_marker",
-    cid: null
-  }, {
-    id: 51,
-    form_id: 5,
-    label: "Phone (US)",
-    field_options: {
-      "phone_format": "us"
-    },
-    required: false,
-    blind: false,
-    admin_only: false,
-    created_at: "2014-08-22T20:50:37.547Z",
-    updated_at: "2014-08-22T20:50:37.547Z",
-    field_type: "phone",
     cid: null
   }
 ];
@@ -1114,10 +848,4 @@ Fixtures.FormRendererOptions.PAGE_STATE = function(){
     Fixtures.FormRendererOptions.CONDITIONAL(),
     { plugins: _.union(FormRenderer.prototype.defaults.plugins, ['PageState']) }
   );
-}
-
-Fixtures.FormRendererOptions.TABLE_REQ = function(){
-  table = Fixtures.FormRendererOptions.TABLE();
-  table.response_fields[0].required = true;
-  return table;
 }
