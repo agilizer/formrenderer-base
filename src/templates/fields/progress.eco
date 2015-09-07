@@ -1,0 +1,4 @@
+<input type="text"   style="border:0; color:#f6931f;width:10px; font-weight:bold;"
+       id="<%= @getDomId() %>"
+       data-rv-input='model.value' />分
+<div class="slider-range-min" data-id="<%= @getDomId() %>"></div>
