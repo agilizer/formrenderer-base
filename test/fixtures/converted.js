@@ -12,7 +12,7 @@ Fixtures.Validation = {
     "invalid": ["1", "4.99999", "10.9"]
   },
   "INTEGER": {
-    "valid": ["1"],
+    "valid": ["1", "3,000"],
     "invalid": ["1.2", "1.0"]
   },
   "PRICE": {
@@ -90,6 +90,23 @@ Fixtures.Validation = {
       "year": "asdf"
     }]
   },
+  "DATE_DISABLE_YEAR": {
+    "valid": [
+      {
+        "month": "2",
+        "day": "3"
+      }
+    ],
+    "invalid": [
+      {
+        "month": "2"
+      },
+      {
+        "month": "11",
+        "day": "31"
+      }
+    ]
+  },
   "TIME": {
     "valid": [{
       "hours": "1",
@@ -146,7 +163,7 @@ Fixtures.Validation = {
         "field_options": {
           "options": [
             {
-              "label": "bar",
+              "label": "bar (baz)",
               "checked": false
             }
           ]
@@ -155,10 +172,10 @@ Fixtures.Validation = {
       "tests": [
         {
           "in": {
-            "bar": true,
+            "bar (baz)": true,
             "Other": "who"
           },
-          "out": "bar who"
+          "out": "bar (baz) who"
         }
       ]
     },
@@ -289,9 +306,9 @@ Fixtures.Validation = {
       "false": ["as"]
     },
     "contains": {
-      "value": "foo",
-      "true": ["foobar", "foo"],
-      "false": ["fo"]
+      "value": "foo (bar)",
+      "true": ["foo (bar)", "foo (bar) baz"],
+      "false": ["foo bar", "foo (bar"]
     },
     "lt": {
       "value": "12.99",

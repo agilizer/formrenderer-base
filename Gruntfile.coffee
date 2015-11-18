@@ -1,5 +1,4 @@
 module.exports = (grunt) ->
-
   grunt.loadNpmTasks('grunt-contrib-coffee')
   grunt.loadNpmTasks('grunt-contrib-concat')
   grunt.loadNpmTasks('grunt-contrib-cssmin')
@@ -8,13 +7,12 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-contrib-watch')
   grunt.loadNpmTasks('grunt-contrib-clean')
-  grunt.loadNpmTasks('grunt-release')
-#  grunt.loadNpmTasks('grunt-karma')
+  grunt.loadNpmTasks('grunt-karma')
   grunt.loadNpmTasks('grunt-aws')
 
   grunt.initConfig
     aws: if grunt.file.exists("credentials.json") then grunt.file.readJSON("credentials.json") else {}
-    bower: grunt.file.readJSON("bower.json")
+    version: grunt.file.read("src/version.coffee").match(/\'([0-9\.]+)\'\s/)[1]
     pkg: '<json:package.json>'
     srcFolder: 'src'
     compiledFolder: 'compiled' # Temporary holding area.
@@ -43,7 +41,6 @@ module.exports = (grunt) ->
             '<%= srcFolder %>/main.coffee'
             '<%= srcFolder %>/version.coffee'
             '<%= srcFolder %>/data.coffee'
-            '<%= srcFolder %>/language.coffee'
             '<%= srcFolder %>/condition_checker.coffee'
             '<%= srcFolder %>/validators/*.coffee'
             '<%= srcFolder %>/models.coffee'
@@ -78,6 +75,7 @@ module.exports = (grunt) ->
           '<%= compiledFolder %>/formrenderer.js': [
             '<%= compiledFolder %>/vendor_config.js'
             '<%= compiledFolder %>/scripts.js'
+            '<%= distFolder %>/i18n/en.js' # load english by default
             '<%= compiledFolder %>/templates.js'
           ]
       dist:
@@ -100,13 +98,11 @@ module.exports = (grunt) ->
           sourcemap: 'none'
         files:
           '<%= distFolder %>/formrenderer.uncompressed.css': '<%= distFolder %>/styles/main.scss'
-          '<%= distFolder %>/formrenderer.with_extras.uncompressed.css': '<%= distFolder %>/styles/with_extras.scss'
 
     cssmin:
       dist:
         files:
           '<%= distFolder %>/formrenderer.css': '<%= distFolder %>/formrenderer.uncompressed.css'
-          '<%= distFolder %>/formrenderer.with_extras.css': '<%= distFolder %>/formrenderer.with_extras.uncompressed.css'
 
     clean:
       compiled:
@@ -131,12 +127,6 @@ module.exports = (grunt) ->
         files: ['<%= testFolder %>/**/*_test.{coffee,js}']
         tasks: 'test'
 
-    # # To test, run `grunt --no-write -v releaseTask`
-    release:
-      options:
-        file: 'bower.json'
-        npm: false
-
     s3:
       options:
         accessKeyId: "<%= aws.accessKeyId %>"
@@ -147,7 +137,7 @@ module.exports = (grunt) ->
       version:
         cwd: "dist/"
         src: "**"
-        dest: '<%= bower.version %>/'
+        dest: '<%= version %>/'
       autoupdate:
         files: [
           src: 'dist/formrenderer.css'
@@ -160,24 +150,35 @@ module.exports = (grunt) ->
           headers:
             CacheControl: 600 # 10 minutes
 
-##    karma:
- ##     main:
- ##       options:
- ##         configFile: '<%= testFolder %>/karma.conf.coffee'
- ##         singleRun: true
-##          reporters: 'dots'
+    karma:
+      main:
+        options:
+          configFile: '<%= testFolder %>/karma.conf.coffee'
+          singleRun: true
+          reporters: 'dots'
 
 
-  grunt.registerTask 'convertYamlFixtures', '', ->
+  grunt.registerTask 'convertI18nToJs', '', ->
+    files = grunt.file.expand('src/i18n/*.yml')
+
+    for file in files
+      language = file.match(/\/([a-z]+)\.yml/)[1]
+      grunt.file.write(
+        "dist/i18n/#{language}.js",
+        "var FormRenderer#{language.toUpperCase()} = #{JSON.stringify(grunt.file.readYAML(file)[language])};\n" +
+        "if (typeof FormRenderer !== 'undefined') FormRenderer.t = FormRenderer#{language.toUpperCase()};"
+      )
+
+  grunt.registerTask 'convertJsonFixtures', '', ->
     grunt.file.write(
       'test/fixtures/converted.js',
       "Fixtures.Validation = #{grunt.file.read('fixtures/validation.json')};" +
       "Fixtures.Conditional = #{grunt.file.read('fixtures/conditional.json')};"
     )
 
-  grunt.registerTask 'default', ['convertYamlFixtures', 'eco:all', 'coffee:config',
-                                 'coffee:all', 'coffee:extras', 'concat:all',
+  grunt.registerTask 'default', ['convertI18nToJs', 'convertJsonFixtures', 'eco:all',
+                                 'coffee:config', 'coffee:all', 'coffee:extras', 'concat:all',
                                  'concat:dist', 'sass:all', 'clean:compiled']
   grunt.registerTask 'dist', ['cssmin:dist', 'uglify:dist']
   grunt.registerTask 'all', ['default', 'dist']
- # grunt.registerTask 'test', ['karma:main']
+  grunt.registerTask 'test', ['karma:main']

@@ -6255,9 +6255,9 @@ rivets.configure({
           return function(xhr) {
             var _ref;
             if (!_this.corsSupported()) {
-              return _this.$el.find('.fr_loading').html("Sorry, your browser does not support this embedded form. Please visit\n<a href='" + (_this.projectUrl()) + "?fr_not_supported=t'>" + (_this.projectUrl()) + "</a> to fill out\nthis form.");
+              return _this.$el.find('.fr_loading').html(FormRenderer.t.not_supported.replace(':url', _this.projectUrl()));
             } else {
-              _this.$el.find('.fr_loading').text("Error loading form: \"" + (((_ref = xhr.responseJSON) != null ? _ref.error : void 0) || 'Unknown') + "\"");
+              _this.$el.find('.fr_loading').text("" + FormRenderer.t.error_loading + ": \"" + (((_ref = xhr.responseJSON) != null ? _ref.error : void 0) || 'Unknown') + "\"");
               return _this.trigger('errorSaving', xhr);
             }
           };
@@ -6615,7 +6615,7 @@ rivets.configure({
     }
   });
 
-  FormRenderer.INPUT_FIELD_TYPES = ['identification', 'address', 'checkboxes', 'date', 'dropdown', 'email', 'file', 'number', 'paragraph', 'phone', 'price', 'radio', 'table', 'text', 'time', 'website', 'map_marker', 'progress'];
+  FormRenderer.INPUT_FIELD_TYPES = ['identification', 'address', 'checkboxes', 'date', 'dropdown', 'email', 'file', 'number', 'progress', 'paragraph', 'phone', 'price', 'radio', 'table', 'text', 'time', 'website', 'map_marker'];
 
   FormRenderer.NON_INPUT_FIELD_TYPES = ['block_of_text', 'page_break', 'section_break'];
 
@@ -6716,10 +6716,19 @@ rivets.configure({
     return _.contains(['True', 'Yes', 'true', '1', 1, 'yes', true], str);
   };
 
+  FormRenderer.normalizeNumber = function(value, units) {
+    var returnVal;
+    returnVal = value.replace(/,/g, '').replace(/-/g, '').replace(/^\+/, '').trim();
+    if (units) {
+      returnVal = returnVal.replace(new RegExp(units + '$', 'i'), '').trim();
+    }
+    return returnVal;
+  };
+
 }).call(this);
 
 (function() {
-  FormRenderer.VERSION = '0.6.8';
+  FormRenderer.VERSION = '0.7.0';
 
 }).call(this);
 
@@ -6737,26 +6746,6 @@ rivets.configure({
 }).call(this);
 
 (function() {
-  FormRenderer.errors = {
-    blank: "请输入内容.",
-    identification: "请输入正确的名字和邮箱.",
-    date: 'Please enter a valid date.',
-    email: '请输入正确邮箱.',
-    integer: '请输入正确的数字.',
-    number: '请输入正确的数字.',
-    price: '请输入正确的价格.',
-    time: '请输入正确的日期格式.',
-    large: '已经超出回答限制.',
-    long: '已经超出回答限制.',
-    short: '回答太短了，请更改.',
-    small: '回答太短了，请更改.',
-    phone: 'Please enter a valid phone number.',
-    us_phone: 'Please enter a valid 10-digit phone number.'
-  };
-
-}).call(this);
-
-(function() {
   FormRenderer.ConditionChecker = (function() {
     function ConditionChecker(form_renderer, condition) {
       var _ref;
@@ -6770,7 +6759,7 @@ rivets.configure({
     };
 
     ConditionChecker.prototype.method_contains = function() {
-      return !!this.value.toLowerCase().match(this.condition.value.toLowerCase());
+      return this.value.toLowerCase().indexOf(this.condition.value.toLowerCase()) > -1;
     };
 
     ConditionChecker.prototype.method_gt = function() {
@@ -6827,7 +6816,11 @@ rivets.configure({
   FormRenderer.Validators.DateValidator = {
     validate: function(model) {
       var day, daysPerMonth, febDays, maxDays, month, year;
-      year = parseInt(model.get('value.year'), 10) || 0;
+      if (model.get('field_options.disable_year')) {
+        year = 2000;
+      } else {
+        year = parseInt(model.get('value.year'), 10) || 0;
+      }
       day = parseInt(model.get('value.day'), 10) || 0;
       month = parseInt(model.get('value.month'), 10) || 0;
       febDays = new Date(year, 1, 29).getMonth() === 1 ? 29 : 28;
@@ -6868,10 +6861,12 @@ rivets.configure({
 (function() {
   FormRenderer.Validators.IntegerValidator = {
     validate: function(model) {
+      var normalized;
       if (!model.get('field_options.integer_only')) {
         return;
       }
-      if (!model.get('value').match(/^-?\d+$/)) {
+      normalized = FormRenderer.normalizeNumber(model.get('value'), model.get('field_options.units'));
+      if (!normalized.match(/^-?\d+$/)) {
         return 'integer';
       }
     }
@@ -6922,14 +6917,9 @@ rivets.configure({
 (function() {
   FormRenderer.Validators.NumberValidator = {
     validate: function(model) {
-      var units, value;
-      value = model.get('value');
-      units = model.get('field_options.units');
-      value = value.replace(/,/g, '').replace(/-/g, '').replace(/^\+/, '').trim();
-      if (units) {
-        value = value.replace(new RegExp(units + '$', 'i'), '').trim();
-      }
-      if (!value.match(/^-?\d*(\.\d+)?$/)) {
+      var normalized;
+      normalized = FormRenderer.normalizeNumber(model.get('value'), model.get('field_options.units'));
+      if (!normalized.match(/^-?\d*(\.\d+)?$/)) {
         return 'number';
       }
     }
@@ -7024,7 +7014,7 @@ rivets.configure({
       }
       if (!this.hasValue()) {
         if (this.isRequired()) {
-          this.errors.push(FormRenderer.errors.blank);
+          this.errors.push(FormRenderer.t.errors.blank);
         }
       } else {
         _ref = this.validators;
@@ -7032,7 +7022,7 @@ rivets.configure({
           validator = _ref[_i];
           errorKey = validator.validate(this);
           if (errorKey) {
-            this.errors.push(FormRenderer.errors[errorKey]);
+            this.errors.push(FormRenderer.t.errors[errorKey]);
           }
         }
       }
@@ -7185,7 +7175,7 @@ rivets.configure({
       }
     },
     toText: function() {
-      return _.values(_.pick(this.getValue(), 'street', 'city', 'state', 'zipcode', 'country')).join(' ');
+      return _.values(_.pick(this.getValue() || {}, 'street', 'city', 'state', 'zipcode', 'country')).join(' ');
     }
   });
 
@@ -7367,15 +7357,21 @@ rivets.configure({
       })(this)));
     },
     hasValue: function() {
-      return _.some(this.get('value'), function(colVals, colNumber) {
-        return _.some(colVals, function(v, k) {
-          return !!v;
-        });
-      });
+      return _.some(this.get('value'), (function(_this) {
+        return function(colVals, colNumber) {
+          return _.some(colVals, function(v, k) {
+            return !_this.getPresetValueByIndices(colNumber, k) && !!v;
+          });
+        };
+      })(this));
     },
-    getPresetValue: function(columnLabel, rowIndex) {
+    getPresetValue: function(columnLabel, row) {
       var _ref;
-      return (_ref = this.get("field_options.preset_values." + columnLabel)) != null ? _ref[rowIndex] : void 0;
+      return (_ref = this.get("field_options.preset_values." + columnLabel)) != null ? _ref[row] : void 0;
+    },
+    getPresetValueByIndices: function(col, row) {
+      var _ref;
+      return (_ref = this.get("field_options.preset_values." + (this.getColumns()[col].label))) != null ? _ref[row] : void 0;
     },
     getValue: function() {
       var column, i, j, returnValue, _i, _j, _len, _ref, _ref1;
@@ -7441,7 +7437,7 @@ rivets.configure({
       return this.hasValueHashKey(['month', 'day', 'year']);
     },
     toText: function() {
-      return _.values(_.pick(this.getValue(), 'month', 'day', 'year')).join('/');
+      return _.values(_.pick(this.getValue() || {}, 'month', 'day', 'year')).join('/');
     }
   });
 
@@ -7501,13 +7497,20 @@ rivets.configure({
     field_type: 'website'
   });
 
-  FormRenderer.Models.ResponseFieldProgress = FormRenderer.Models.ResponseField.extend({
-    field_type: 'progress'
-  });
-
   FormRenderer.Models.ResponseFieldPhone = FormRenderer.Models.ResponseField.extend({
     field_type: 'phone',
     validators: [FormRenderer.Validators.PhoneValidator]
+  });
+
+  FormRenderer.Models.ResponseFieldProgress = FormRenderer.Models.ResponseField.extend({
+    validators: [FormRenderer.Validators.NumberValidator, FormRenderer.Validators.MinMaxValidator, FormRenderer.Validators.IntegerValidator],
+    field_type: 'progress',
+    getValue: function() {
+      return $("#progressInput" + this.get('id')).val();
+    },
+    setExistingValue: function(x) {
+      return this.set('value', $("#progressInput" + this.get('id')).val());
+    }
   });
 
   _ref = FormRenderer.NON_INPUT_FIELD_TYPES;
@@ -8046,12 +8049,12 @@ rivets.configure({
     },
     fileChanged: function(e) {
       var newFilename, _ref;
-      newFilename = ((_ref = e.target.files) != null ? _ref[0] : void 0) != null ? e.target.files[0].name : e.target.value ? e.target.value.replace(/^.+\\/, '') : 'Error reading filename';
+      newFilename = ((_ref = e.target.files) != null ? _ref[0] : void 0) != null ? e.target.files[0].name : e.target.value ? e.target.value.replace(/^.+\\/, '') : FormRenderer.t.error_filename;
       this.model.set('value.filename', newFilename, {
         silent: true
       });
       this.$el.find('.js-filename').text(newFilename);
-      this.$status.text('Uploading...');
+      this.$status.text(FormRenderer.t.uploading);
       return this.doUpload();
     },
     doUpload: function() {
@@ -8074,7 +8077,7 @@ rivets.configure({
         dataType: 'json',
         uploadProgress: (function(_this) {
           return function(_, __, ___, percentComplete) {
-            return _this.$status.text(percentComplete === 100 ? 'Finishing up...' : "Uploading... (" + percentComplete + "%)");
+            return _this.$status.text(percentComplete === 100 ? FormRenderer.t.finishing_up : "" + FormRenderer.t.uploading + " (" + percentComplete + "%)");
           };
         })(this),
         complete: (function(_this) {
@@ -8093,7 +8096,7 @@ rivets.configure({
           return function(data) {
             var errorText, _ref;
             errorText = (_ref = data.responseJSON) != null ? _ref.errors : void 0;
-            _this.$status.text(errorText ? "Error: " + errorText : 'Error');
+            _this.$status.text(errorText ? "" + FormRenderer.t.error + ": " + errorText : FormRenderer.t.error);
             _this.$status.addClass('fr_error');
             return setTimeout(function() {
               return _this.render();
@@ -8164,6 +8167,9 @@ rivets.configure({
       });
     },
     enable: function() {
+      if (!this.map) {
+        return;
+      }
       this.map.addLayer(this.marker);
       this.$cover.hide();
       return this._onMove();
@@ -8198,11 +8204,7 @@ rivets.configure({
     }
   });
 
-  FormRenderer.Views.ResponseFieldProgress = FormRenderer.Views.ResponseField.extend({
-    field_type: 'progress'
-  });
-
-  _ref = _.without(FormRenderer.INPUT_FIELD_TYPES, 'address', 'table', 'file', 'map_marker', 'price', 'phone', 'progress');
+  _ref = _.without(FormRenderer.INPUT_FIELD_TYPES, 'address', 'table', 'file', 'map_marker', 'price', 'phone');
   for (_i = 0, _len = _ref.length; _i < _len; _i++) {
     i = _ref[_i];
     FormRenderer.Views["ResponseField" + (_str.classify(i))] = FormRenderer.Views.ResponseField.extend({
@@ -8220,6 +8222,8 @@ rivets.configure({
 
 }).call(this);
 
+var FormRendererEN = {"address":"地址","cents":"Cents","city":"城市","clear":"清空","click_to_set":"设置地址","country":"国家","dollars":"￥","enter_exactly":"输入 :num","enter_between":"输入大于 :min 小于 :max","enter_at_least":"最少输入 :min","enter_up_to":"最多输入 :max","email":"邮箱","error":"错误","error_filename":"读取文件出错","error_loading":"加载表单出错","errors":{"blank":"请选择或者输入答案.","date":"请输入正确的时间.","email":"请输入正确的邮箱地址.","identification":"请输入用户名和邮箱.","integer":"请输入一个整数.","large":"回答超出限制.","long":"回答超出限制.","number":"请输入正确的数字.","phone":"请输入正确的电话号码.","price":"请输入正确的价格.","short":"回答字数不够.","small":"回答不正确.","time":"请输入正确的时间.","us_phone":"Please enter a valid 10-digit phone number."},"finishing_up":"正在提交...","na":"N/A","name":"Name","not_supported":"对不起, 您的浏览器不支持<a href=':url?fr_not_supported=t'>:url</a> .","other":"Other","postal_code":"Postal Code","province":"Province","state":"State","state_province_region":"State / Province / Region","uploading":"Uploading...","we_accept":"We'll accept","write_here":"Write your answer here","zip_code":"ZIP Code"};
+if (typeof FormRenderer !== 'undefined') FormRenderer.t = FormRendererEN;
 if (!window.JST) {
   window.JST = {};
 }
@@ -8251,7 +8255,9 @@ window.JST["fields/address"] = function(__obj) {
       _print(_safe('\n\n'));
     
       if (format !== 'city_state' && format !== 'city_state_zip' && format !== 'country') {
-        _print(_safe('\n  <div class=\'fr_grid\'>\n    <div class=\'fr_full has_sub_label\'>\n      <label class="fr_sub_label">Address</label>\n      <input type="text"\n             id="'));
+        _print(_safe('\n  <div class=\'fr_grid\'>\n    <div class=\'fr_full has_sub_label\'>\n      <label class="fr_sub_label">'));
+        _print(FormRenderer.t.address);
+        _print(_safe('</label>\n      <input type="text"\n             id="'));
         _print(this.getDomId());
         _print(_safe('"\n             data-rv-input=\'model.value.street\' />\n    </div>\n  </div>\n'));
       }
@@ -8259,13 +8265,21 @@ window.JST["fields/address"] = function(__obj) {
       _print(_safe('\n\n'));
     
       if (format !== 'country') {
-        _print(_safe('\n  <div class=\'fr_grid\'>\n    <div class=\'fr_half has_sub_label\'>\n      <label class="fr_sub_label">City</label>\n      <input type="text"\n             data-rv-input=\'model.value.city\' />\n    </div>\n\n    <div class=\'fr_half has_sub_label\'>\n      <label class="fr_sub_label">\n        '));
+        _print(_safe('\n  <div class=\'fr_grid\'>\n    <div class=\'fr_half has_sub_label\'>\n      <label class="fr_sub_label">'));
+        _print(FormRenderer.t.city);
+        _print(_safe('</label>\n      <input type="text"\n             data-rv-input=\'model.value.city\' />\n    </div>\n\n    <div class=\'fr_half has_sub_label\'>\n      <label class="fr_sub_label">\n        '));
         if (this.model.get('value.country') === 'US') {
-          _print(_safe('\n          State\n        '));
+          _print(_safe('\n          '));
+          _print(FormRenderer.t.state);
+          _print(_safe('\n        '));
         } else if (this.model.get('value.country') === 'CA') {
-          _print(_safe('\n          Province\n        '));
+          _print(_safe('\n          '));
+          _print(FormRenderer.t.province);
+          _print(_safe('\n        '));
         } else {
-          _print(_safe('\n          State / Province / Region\n        '));
+          _print(_safe('\n          '));
+          _print(FormRenderer.t.state_province_region);
+          _print(_safe('\n        '));
         }
         _print(_safe('\n      </label>\n\n      '));
         if ((ref = this.model.get('value.country')) === 'US' || ref === 'CA') {
@@ -8291,17 +8305,23 @@ window.JST["fields/address"] = function(__obj) {
       if (format !== 'city_state' && format !== 'country') {
         _print(_safe('\n    <div class=\'fr_half has_sub_label\'>\n      <label class="fr_sub_label">\n        '));
         if (this.model.get('value.country') === 'US') {
-          _print(_safe('ZIP'));
+          _print(_safe('\n          '));
+          _print(FormRenderer.t.zip_code);
+          _print(_safe('\n        '));
         } else {
-          _print(_safe('Postal'));
+          _print(_safe('\n          '));
+          _print(FormRenderer.t.postal_code);
+          _print(_safe('\n        '));
         }
-        _print(_safe(' Code\n      </label>\n      <input type="text"\n             data-rv-input=\'model.value.zipcode\' />\n    </div>\n  '));
+        _print(_safe('\n      </label>\n      <input type="text"\n             data-rv-input=\'model.value.zipcode\' />\n    </div>\n  '));
       }
     
       _print(_safe('\n\n  '));
     
       if (format !== 'city_state' && format !== 'city_state_zip') {
-        _print(_safe('\n    <div class=\'fr_half has_sub_label\'>\n      <label class="fr_sub_label">Country</label>\n      <select data-rv-value=\'model.value.country\' data-width=\'100%\'>\n        '));
+        _print(_safe('\n    <div class=\'fr_half has_sub_label\'>\n      <label class="fr_sub_label">'));
+        _print(FormRenderer.t.country);
+        _print(_safe('</label>\n      <select data-rv-value=\'model.value.country\' data-width=\'100%\'>\n        '));
         ref2 = FormRenderer.ORDERED_COUNTRIES;
         for (j = 0, len1 = ref2.length; j < len1; j++) {
           x = ref2[j];
@@ -8427,7 +8447,11 @@ window.JST["fields/checkboxes"] = function(__obj) {
       _print(_safe('\n\n'));
     
       if (this.model.get('field_options.include_other_option')) {
-        _print(_safe('\n  <div class=\'fr_option fr_other_option\'>\n    <label class=\'control\'>\n      <input type=\'checkbox\' data-rv-checked=\'model.value.other_checkbox\' />\n      Other\n    </label>\n\n    <input type=\'text\' data-rv-show=\'model.showOther\' data-rv-input=\'model.value.other\' placeholder=\'Write your answer here\' />\n  </div>\n'));
+        _print(_safe('\n  <div class=\'fr_option fr_other_option\'>\n    <label class=\'control\'>\n      <input type=\'checkbox\' data-rv-checked=\'model.value.other_checkbox\' />\n      '));
+        _print(FormRenderer.t.other);
+        _print(_safe('\n    </label>\n\n    <input type=\'text\' data-rv-show=\'model.showOther\' data-rv-input=\'model.value.other\' placeholder=\''));
+        _print(FormRenderer.t.write_here);
+        _print(_safe('\' />\n  </div>\n'));
       }
     
       _print(_safe('\n'));
@@ -8479,7 +8503,13 @@ window.JST["fields/date"] = function(__obj) {
     
       _print(this.getDomId());
     
-      _print(_safe('"\n           data-rv-input=\'model.value.month\'\n           maxlength=\'2\'\n           size=\'2\' />\n  </div>\n\n  <div class=\'fr_spacer\'>/</div>\n\n  <div class=\'has_sub_label\'>\n    <label class="fr_sub_label">DD</label>\n    <input type="text"\n           data-rv-input=\'model.value.day\'\n           maxlength=\'2\'\n           size=\'2\' />\n  </div>\n\n  <div class=\'fr_spacer\'>/</div>\n\n  <div class=\'has_sub_label\'>\n    <label class="fr_sub_label">YYYY</label>\n    <input type="text"\n           data-rv-input=\'model.value.year\'\n           maxlength=\'4\'\n           size=\'4\' />\n  </div>\n</div>\n'));
+      _print(_safe('"\n           data-rv-input=\'model.value.month\'\n           maxlength=\'2\'\n           size=\'2\' />\n  </div>\n\n  <div class=\'fr_spacer\'>/</div>\n\n  <div class=\'has_sub_label\'>\n    <label class="fr_sub_label">DD</label>\n    <input type="text"\n           data-rv-input=\'model.value.day\'\n           maxlength=\'2\'\n           size=\'2\' />\n  </div>\n\n  '));
+    
+      if (!this.model.get('field_options.disable_year')) {
+        _print(_safe('\n    <div class=\'fr_spacer\'>/</div>\n\n    <div class=\'has_sub_label\'>\n      <label class="fr_sub_label">YYYY</label>\n      <input type="text"\n             data-rv-input=\'model.value.year\'\n             maxlength=\'4\'\n             size=\'4\' />\n    </div>\n  '));
+      }
+    
+      _print(_safe('\n</div>\n'));
     
     }).call(this);
     
@@ -8649,7 +8679,9 @@ window.JST["fields/file"] = function(__obj) {
         _print(this.model.get('value.filename'));
         _print(_safe('</span>\n  <button data-fr-remove-file class=\''));
         _print(FormRenderer.BUTTON_CLASS);
-        _print(_safe('\'>Remove</button>\n'));
+        _print(_safe('\'>'));
+        _print(FormRenderer.t.clear);
+        _print(_safe('</button>\n'));
       } else {
         _print(_safe('\n  <input type=\'file\'\n         id=\''));
         _print(this.getDomId());
@@ -8661,7 +8693,9 @@ window.JST["fields/file"] = function(__obj) {
         }
         _print(_safe('\n         />\n  <span class=\'js-upload-status\'></span>\n\n  '));
         if ((exts = this.model.getAcceptedExtensions())) {
-          _print(_safe('\n    <div class=\'fr_description\'>\n      We\'ll accept '));
+          _print(_safe('\n    <div class=\'fr_description\'>\n      '));
+          _print(FormRenderer.t.we_accept);
+          _print(_safe(' '));
           _print(_str.toSentence(exts));
           _print(_safe('\n    </div>\n  '));
         }
@@ -8717,7 +8751,11 @@ window.JST["fields/identification"] = function(__obj) {
     
       _print(this.getDomId());
     
-      _print(_safe('-name\'>Name <abbr class=\'fr_required\' title=\'required\'>*</abbr></label>\n    <input type=\'text\'\n           id=\''));
+      _print(_safe('-name\'>'));
+    
+      _print(FormRenderer.t.name);
+    
+      _print(_safe(' <abbr class=\'fr_required\' title=\'required\'>*</abbr></label>\n    <input type=\'text\'\n           id=\''));
     
       _print(this.getDomId());
     
@@ -8725,7 +8763,11 @@ window.JST["fields/identification"] = function(__obj) {
     
       _print(this.getDomId());
     
-      _print(_safe('-email\'>Email <abbr class=\'fr_required\' title=\'required\'>*</abbr></label>\n    <input type="text"\n           id=\''));
+      _print(_safe('-email\'>'));
+    
+      _print(FormRenderer.t.email);
+    
+      _print(_safe(' <abbr class=\'fr_required\' title=\'required\'>*</abbr></label>\n    <input type="text"\n           id=\''));
     
       _print(this.getDomId());
     
@@ -8774,7 +8816,19 @@ window.JST["fields/map_marker"] = function(__obj) {
       return _safe(result);
     };
     (function() {
-      _print(_safe('<div class=\'fr_map_wrapper\'>\n  <div class=\'fr_map_map\' />\n\n  <div class=\'fr_map_cover\'>\n    Click to set location\n  </div>\n\n  <div class=\'fr_map_toolbar\'>\n    <div class=\'fr_map_coord\'>\n      <strong>Coordinates:</strong>\n      <span data-rv-show=\'model.value.lat\'>\n        <span data-rv-text=\'model.value.lat\' />,\n        <span data-rv-text=\'model.value.lng\' />\n      </span>\n      <span data-rv-hide=\'model.value.lat\' class=\'fr_map_no_location\'>N/A</span>\n    </div>\n    <a class=\'fr_map_clear\' data-fr-clear-map data-rv-show=\'model.value.lat\' href=\'#\'>Clear</a>\n  </div>\n</div>\n'));
+      _print(_safe('<div class=\'fr_map_wrapper\'>\n  <div class=\'fr_map_map\' />\n\n  <div class=\'fr_map_cover\'>\n    '));
+    
+      _print(FormRenderer.t.click_to_set);
+    
+      _print(_safe('\n  </div>\n\n  <div class=\'fr_map_toolbar\'>\n    <div class=\'fr_map_coord\'>\n      <strong>Coordinates:</strong>\n      <span data-rv-show=\'model.value.lat\'>\n        <span data-rv-text=\'model.value.lat\' />,\n        <span data-rv-text=\'model.value.lng\' />\n      </span>\n      <span data-rv-hide=\'model.value.lat\' class=\'fr_map_no_location\'>'));
+    
+      _print(FormRenderer.t.na);
+    
+      _print(_safe('</span>\n    </div>\n    <a class=\'fr_map_clear\' data-fr-clear-map data-rv-show=\'model.value.lat\' href=\'#\'>'));
+    
+      _print(FormRenderer.t.clear);
+    
+      _print(_safe('</a>\n  </div>\n</div>\n'));
     
     }).call(this);
     
@@ -9027,14 +9081,20 @@ window.JST["fields/price"] = function(__obj) {
       return _safe(result);
     };
     (function() {
-      _print(_safe('<div class=\'fr_grid\'>\n  <div class=\'fr_spacer\'>$</div>\n\n  <div class=\'has_sub_label\'>\n    <label class="fr_sub_label">Dollars</label>\n    <input type="text"\n           id="'));
+      _print(_safe('<div class=\'fr_grid\'>\n  <div class=\'fr_spacer\'>$</div>\n\n  <div class=\'has_sub_label\'>\n    <label class="fr_sub_label">'));
+    
+      _print(FormRenderer.t.dollars);
+    
+      _print(_safe('</label>\n    <input type="text"\n           id="'));
     
       _print(this.getDomId());
     
       _print(_safe('"\n           data-rv-input=\'model.value.dollars\'\n           size=\'6\' />\n  </div>\n\n  '));
     
       if (!this.model.get('field_options.disable_cents')) {
-        _print(_safe('\n    <div class=\'fr_spacer\'>.</div>\n    <div class=\'has_sub_label\'>\n      <label class="fr_sub_label">Cents</label>\n      <input type="text"\n             data-rv-input=\'model.value.cents\'\n             maxlength=\'2\'\n             size=\'2\' />\n    </div>\n  '));
+        _print(_safe('\n    <div class=\'fr_spacer\'>.</div>\n    <div class=\'has_sub_label\'>\n      <label class="fr_sub_label">'));
+        _print(FormRenderer.t.cents);
+        _print(_safe('</label>\n      <input type="text"\n             data-rv-input=\'model.value.cents\'\n             maxlength=\'2\'\n             size=\'2\' />\n    </div>\n  '));
       }
     
       _print(_safe('\n</div>\n'));
@@ -9082,15 +9142,27 @@ window.JST["fields/progress"] = function(__obj) {
       return _safe(result);
     };
     (function() {
-      _print(_safe('<input type="text"   style="border:0; color:#f6931f;width:10px; font-weight:bold;"\n       id="'));
+      _print(_safe('<input type="text"    style="display:none;"\n       id="progressInput'));
+    
+      _print(this.model.get('id'));
+    
+      _print(_safe('"\n       data-rv-input=\'model.value\' value="5"/>\n\n<div class="part1"  id="'));
     
       _print(this.getDomId());
     
-      _print(_safe('"\n       data-rv-input=\'model.value\' />分\n<div class="slider-range-min" data-id="'));
+      _print(_safe('">\n       <div class="needle-p">\n          <div class="loading-bg">\n              <div class="loading">\n                  <span class="needle"></span>\n              </div>\n          </div>\n          <div  id="dragdealer'));
     
-      _print(this.getDomId());
+      _print(this.model.get('id'));
     
-      _print(_safe('"></div>\n'));
+      _print(_safe('" data-id="'));
+    
+      _print(this.model.get('id'));
+    
+      _print(_safe('" class="dragdealer num-p">\n              <div class="num num-l">0</div>\n              <div class="handle num-bg num-c">5</div>\n              <div class="num num-r">10</div>\n          </div>\n       </div>\n       <p>'));
+    
+      _print(_safe(FormRenderer.formatHTML(this.model.get('description'))));
+    
+      _print(_safe('</p>\n</div>\n<div class="line-bg"></div>\n'));
     
     }).call(this);
     
@@ -9140,25 +9212,31 @@ window.JST["fields/radio"] = function(__obj) {
       ref = this.model.getOptions();
       for (i = j = 0, len = ref.length; j < len; i = ++j) {
         option = ref[i];
-        _print(_safe('\n  <label class=\'fr_option control\'>\n    <input type=\'radio\'\n           data-rv-checked=\'model.value.selected\'\n           id="'));
-        _print(this.getDomId());
+        _print(_safe('\n    <div class="oneOption">\n    <input type=\'radio\'\n           data-rv-checked=\'model.value.selected\'\n           id="'));
+        _print(this.getDomId() + i);
         _print(_safe('"\n           name="'));
         _print(this.getDomId());
         _print(_safe('"\n           value="'));
         _print(option.label);
-        _print(_safe('" />\n    '));
+        _print(_safe('" />\n\n    <label class=\'fr_option control\' for="'));
+        _print(this.getDomId() + i);
+        _print(_safe('">\n    '));
         _print(option.label);
-        _print(_safe('\n  </label>\n'));
+        _print(_safe('\n  </label>\n  </div>\n'));
       }
     
       _print(_safe('\n\n'));
     
       if (this.model.get('field_options.include_other_option')) {
-        _print(_safe('\n  <div class=\'fr_option fr_other_option\'>\n    <label class=\'control\'>\n      <input type=\'radio\'\n             data-rv-checked=\'model.value.selected\'\n             id="'));
+        _print(_safe('\n  <div class=\'fr_option fr_other_option\'>\n    <label class=\'control\' >\n      <input type=\'radio\'\n             data-rv-checked=\'model.value.selected\'\n             id="'));
         _print(this.getDomId());
         _print(_safe('"\n             name="'));
         _print(this.getDomId());
-        _print(_safe('"\n             value="Other" />\n      Other\n    </label>\n\n    <input type=\'text\' data-rv-show=\'model.showOther\' data-rv-input=\'model.value.other\' placeholder=\'Write your answer here\' />\n  </div>\n'));
+        _print(_safe('"\n             value="Other" />\n      '));
+        _print(FormRenderer.t.other);
+        _print(_safe('\n    </label>\n\n    <input type=\'text\' data-rv-show=\'model.showOther\' data-rv-input=\'model.value.other\' placeholder=\''));
+        _print(FormRenderer.t.write_here);
+        _print(_safe('\' />\n  </div>\n'));
       }
     
       _print(_safe('\n'));
@@ -9551,7 +9629,7 @@ window.JST["main"] = function(__obj) {
       return _safe(result);
     };
     (function() {
-      _print(_safe('<div class=\'fr_loading\'>\n  加载数据......\n</div>'));
+      _print(_safe('<div class=\'fr_loading\'>\n  正在加载...\n</div>'));
     
     }).call(this);
     
@@ -9698,12 +9776,10 @@ window.JST["partials/label"] = function(__obj) {
     
       _print(_safe('">\n  '));
     
-      _print(this.model.get('label'));
-    
-      _print(_safe('\n  '));
+      _print(_safe(FormRenderer.formatHTML(this.model.get('label'))));
     
       if (this.model.get('required')) {
-        _print(_safe('<abbr class=\'fr_required\' title=\'required\'>*</abbr>'));
+        _print(_safe('&nbsp;<abbr class=\'fr_required\' title=\'required\'>*</abbr>'));
       }
     
       _print(_safe('\n\n  '));
@@ -9833,33 +9909,23 @@ window.JST["partials/length_validations"] = function(__obj) {
         if (min && max) {
           _print(_safe('\n        '));
           if (min === max) {
-            _print(_safe('\n          请输入 '));
-            _print(min);
-            _print(_safe(' '));
-            _print(units);
-            _print(_safe('.\n        '));
+            _print(_safe('\n          '));
+            _print(FormRenderer.t.enter_exactly.replace(':num', min));
+            _print(_safe(' 字符.\n        '));
           } else {
-            _print(_safe('\n          最少 '));
-            _print(min);
-            _print(_safe(' 最大 '));
-            _print(max);
-            _print(_safe(' '));
-            _print(units);
-            _print(_safe('.\n        '));
+            _print(_safe('\n          '));
+            _print(FormRenderer.t.enter_between.replace(':min', min).replace(':max', max));
+            _print(_safe(' 字符.\n        '));
           }
           _print(_safe('\n      '));
         } else if (min) {
-          _print(_safe('\n        最少 '));
-          _print(min);
-          _print(_safe(' '));
-          _print(units);
-          _print(_safe('.\n      '));
+          _print(_safe('\n        '));
+          _print(FormRenderer.t.enter_at_least.replace(':min', min));
+          _print(_safe(' 字符.\n      '));
         } else if (max) {
-          _print(_safe('\n        最大 '));
-          _print(max);
-          _print(_safe(' '));
-          _print(units);
-          _print(_safe('.\n      '));
+          _print(_safe('\n        '));
+          _print(FormRenderer.t.enter_up_to.replace(':max', max));
+          _print(_safe(' 字符.\n      '));
         }
         _print(_safe('\n    </span>\n\n    '));
         _print(_safe(JST["partials/length_counter"](this)));
@@ -9914,17 +9980,17 @@ window.JST["partials/min_max_validations"] = function(__obj) {
       if (this.model.hasMinMaxValidations()) {
         _print(_safe('\n  <div class=\'fr_min_max\'>\n    '));
         if (this.model.get('field_options.min') && this.model.get('field_options.max')) {
-          _print(_safe('\n      大于 '));
+          _print(_safe('\n      Between '));
           _print(this.model.get('field_options.min'));
-          _print(_safe(' 小于 '));
+          _print(_safe(' and '));
           _print(this.model.get('field_options.max'));
           _print(_safe('.\n    '));
         } else if (this.model.get('field_options.min')) {
-          _print(_safe('\n      输入数字最小为 '));
+          _print(_safe('\n      Enter a number that is at least '));
           _print(this.model.get('field_options.min'));
           _print(_safe('.\n    '));
         } else if (this.model.get('field_options.max')) {
-          _print(_safe('\n      输入数字最大为 '));
+          _print(_safe('\n      Enter a number up to '));
           _print(this.model.get('field_options.max'));
           _print(_safe('.\n    '));
         }
@@ -10170,7 +10236,7 @@ window.JST["plugins/bottom_bar"] = function(__obj) {
       if (indexOf.call(this.form_renderer.options.plugins, 'Autosave') >= 0) {
         _print(_safe('\n    <div class=\'fr_bottom_l\'>\n      '));
         if (this.form_renderer.state.get('hasServerErrors')) {
-          _print(_safe('\n        保存出借\n      '));
+          _print(_safe('\n        保存出错\n      '));
         } else if (this.form_renderer.state.get('hasChanges')) {
           _print(_safe('\n        正在保存...\n      '));
         } else {
@@ -10184,7 +10250,7 @@ window.JST["plugins/bottom_bar"] = function(__obj) {
       if (!this.form_renderer.isFirstPage()) {
         _print(_safe('\n      <button data-fr-previous-page class=\''));
         _print(FormRenderer.BUTTON_CLASS);
-        _print(_safe('\'>\n        后退 '));
+        _print(_safe('\'>\n        返回 '));
         _print(this.form_renderer.previousPage());
         _print(_safe('\n      </button>\n    '));
       }
@@ -10202,7 +10268,7 @@ window.JST["plugins/bottom_bar"] = function(__obj) {
         if (this.form_renderer.isLastPage() || !this.form_renderer.options.enablePages) {
           _print(_safe('提交'));
         } else {
-          _print(_safe('前进'));
+          _print(_safe('下一页'));
         }
         _print(_safe('\n      </button>\n    '));
       }
@@ -10253,7 +10319,7 @@ window.JST["plugins/error_bar"] = function(__obj) {
     };
     (function() {
       if (!this.form_renderer.areAllPagesValid()) {
-        _print(_safe('\n  <div class=\'fr_error_alert_bar\'>\n    您的回答有 <a href=\'#\'>错误</a>.\n  </div>\n'));
+        _print(_safe('\n  <div class=\'fr_error_alert_bar\'>\n    你的回答存在<a href=\'#\'>错误</a>.\n  </div>\n'));
       }
     
       _print(_safe('\n'));

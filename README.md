@@ -87,6 +87,9 @@ If you're ready to dive into the full power of formrenderer and need some inspir
 
 Most notably, formrenderer lacks support for IE9 and earlier due to its reliance on CORS requests to the Screendoor API. Users will see an error notifying them that they'll need to visit the form on Screendoor in order to respond.
 
+## i18n
+
+All language strings have been placed in a `FormRenderer.t` object, and the default distribution contains language files for English only. To render a form in another language, simply modify or replace the strings inside of `FormRenderer.t`.
 
 ## Developing
 
@@ -99,7 +102,7 @@ You'll need [node and npm](http://nodejs.org/) installed.
 
 When you're ready to release a new version:
 
-1. Bump the version number inside of `version.coffee` and `bower.json`
+1. Bump the version number inside of `version.coffee`
 2. `grunt all && grunt test` to build with the updated version number (and make sure everything is working!)
 3. `git commit -am 'release VERSION' && git tag VERSION && git push origin master --tags`
 4. `grunt s3:version` to push to the version-specific s3 distribution

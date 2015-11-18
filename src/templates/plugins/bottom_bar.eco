@@ -2,7 +2,7 @@
   <% if 'Autosave' in @form_renderer.options.plugins: %>
     <div class='fr_bottom_l'>
       <% if @form_renderer.state.get('hasServerErrors'): %>
-        保存出借
+        保存出错
       <% else if @form_renderer.state.get('hasChanges'): %>
         正在保存...
       <% else: %>
@@ -14,7 +14,7 @@
   <div class='fr_bottom_r'>
     <% if !@form_renderer.isFirstPage(): %>
       <button data-fr-previous-page class='<%= FormRenderer.BUTTON_CLASS %>'>
-        后退 <%= @form_renderer.previousPage() %>
+        返回 <%= @form_renderer.previousPage() %>
       </button>
     <% end %>
 
@@ -24,7 +24,7 @@
       </button>
     <% else: %>
       <button data-fr-next-page class='<%= FormRenderer.BUTTON_CLASS %>'>
-        <% if (@form_renderer.isLastPage() || !@form_renderer.options.enablePages): %>提交<% else: %>前进<% end %>
+        <% if (@form_renderer.isLastPage() || !@form_renderer.options.enablePages): %>提交<% else: %>下一页<% end %>
       </button>
     <% end %>
   </div>

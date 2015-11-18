@@ -8,32 +8,17 @@ Fixtures.RESPONSE_FIELD = {
 
 Fixtures.KITCHEN_SINK_FORM = [
   {
-    id: 350,
+    id: 35,
     form_id: 5,
-    label: "Progress",
-    field_options: {},
-    required: true,
+    label: "<span class='wenti'>问题经常性</span> <span class='sheng'>生活中，您是否经常会遇到<samp class='replacePain'>“自来水中还有余氯”</samp></span> ",
+    field_options: { required:true},
     blind: true,
+    description:'10分代表极度频繁，1分表示完全没有，请您打分。',
     admin_only: false,
-    value:'5',
     created_at: "2014-08-22T20:50:37.152Z",
     updated_at: "2014-08-22T20:50:37.152Z",
     field_type: "progress",
-    cid: 'asdfasfasdfdf'
-  },
-  {
-    id: 35,
-    form_id: 5,
-    label: "Text",
-    field_options: {},
-    required: true,
-    blind: true,
-    admin_only: false,
-    value:'my value is text',
-    created_at: "2014-08-22T20:50:37.152Z",
-    updated_at: "2014-08-22T20:50:37.152Z",
-    field_type: "text",
-    cid: '12333333aassas'
+    cid: null
   }, {
     id: 36,
     form_id: 5,
@@ -50,6 +35,29 @@ Fixtures.KITCHEN_SINK_FORM = [
     created_at: "2014-08-22T20:50:37.169Z",
     updated_at: "2014-08-22T20:50:37.169Z",
     field_type: "paragraph",
+    cid: null
+  }, {
+    id: 37,
+    form_id: 5,
+    label: "radio",
+    field_options: {
+      options: [
+        {
+          checked: "false",
+          label: "Choice #1 (yas)"
+        }, {
+          checked: "false",
+          label: "Choice #2"
+        }
+      ],
+      required: true
+    },
+    required: false,
+    blind: false,
+    admin_only: false,
+    created_at: "2014-08-22T20:50:37.187Z",
+    updated_at: "2014-08-22T20:50:37.187Z",
+    field_type: "radio",
     cid: null
   }
 ];
@@ -848,4 +856,10 @@ Fixtures.FormRendererOptions.PAGE_STATE = function(){
     Fixtures.FormRendererOptions.CONDITIONAL(),
     { plugins: _.union(FormRenderer.prototype.defaults.plugins, ['PageState']) }
   );
+}
+
+Fixtures.FormRendererOptions.TABLE_REQ = function(){
+  table = Fixtures.FormRendererOptions.TABLE();
+  table.response_fields[0].required = true;
+  return table;
 }

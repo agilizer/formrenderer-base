@@ -89,7 +89,3 @@ Fixtures.Validation = {
   }
 }
 ;
-
-var aa = {"15779964238e47fea6b7d98fa13964e2":"a",
-    "099776e01d0c42a1a0908e68b7c4bba0":"",
-    "0e84acc3abdf4e2cac99ec0f8d176f2f":"0"}

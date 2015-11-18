@@ -21,12 +21,12 @@ FormRenderer.Models.ResponseField = Backbone.DeepModel.extend
 
     # Presence is a special-case, since it will stop us from running any other validators
     if !@hasValue()
-      @errors.push(FormRenderer.errors.blank) if @isRequired()
+      @errors.push(FormRenderer.t.errors.blank) if @isRequired()
     else
       # If value is present, run all the other validators
       for validator in @validators
         errorKey = validator.validate(@)
-        @errors.push(FormRenderer.errors[errorKey]) if errorKey
+        @errors.push(FormRenderer.t.errors[errorKey]) if errorKey
 
     errorIs = @getError()
 
@@ -161,7 +161,7 @@ FormRenderer.Models.ResponseFieldAddress = FormRenderer.Models.ResponseField.ext
       @hasValueHashKey ['street', 'city', 'state', 'zipcode']
 
   toText: ->
-    _.values(_.pick(@getValue(), 'street', 'city', 'state', 'zipcode', 'country')).join(' ')
+    _.values(_.pick(@getValue() || {}, 'street', 'city', 'state', 'zipcode', 'country')).join(' ')
 
 FormRenderer.Models.ResponseFieldCheckboxes = FormRenderer.Models.ResponseField.extend
   field_type: 'checkboxes'
@@ -290,12 +290,15 @@ FormRenderer.Models.ResponseFieldTable = FormRenderer.Models.ResponseField.exten
           h["#{j}"]["#{i}"] = @getPresetValue(column.label, i) || x?[column.label]?[i]
 
   hasValue: ->
-    _.some @get('value'), (colVals, colNumber) ->
-      _.some colVals, (v, k) ->
-        !!v
+    _.some @get('value'), (colVals, colNumber) =>
+      _.some colVals, (v, k) =>
+        !@getPresetValueByIndices(colNumber, k) && !!v
 
-  getPresetValue: (columnLabel, rowIndex) ->
-    @get("field_options.preset_values.#{columnLabel}")?[rowIndex]
+  getPresetValue: (columnLabel, row) ->
+    @get("field_options.preset_values.#{columnLabel}")?[row]
+
+  getPresetValueByIndices: (col, row) ->
+    @get("field_options.preset_values.#{@getColumns()[col].label}")?[row]
 
   # transform value to { '0' => ['a', 'b'], '1' => ['c', 'd'] } groups
   getValue: ->
@@ -340,7 +343,7 @@ FormRenderer.Models.ResponseFieldDate = FormRenderer.Models.ResponseField.extend
   hasValue: ->
     @hasValueHashKey ['month', 'day', 'year']
   toText: ->
-    _.values(_.pick(@getValue(), 'month', 'day', 'year')).join('/')
+    _.values(_.pick(@getValue() || {}, 'month', 'day', 'year')).join('/')
 
 FormRenderer.Models.ResponseFieldEmail = FormRenderer.Models.ResponseField.extend
   validators: [FormRenderer.Validators.EmailValidator]
@@ -389,15 +392,25 @@ FormRenderer.Models.ResponseFieldTime = FormRenderer.Models.ResponseField.extend
 FormRenderer.Models.ResponseFieldWebsite = FormRenderer.Models.ResponseField.extend
   field_type: 'website'
 
-
-FormRenderer.Models.ResponseFieldProgress = FormRenderer.Models.ResponseField.extend
-  field_type: 'progress'
-
 FormRenderer.Models.ResponseFieldPhone = FormRenderer.Models.ResponseField.extend
   field_type: 'phone'
   validators: [
     FormRenderer.Validators.PhoneValidator
   ]
+
+
+FormRenderer.Models.ResponseFieldProgress = FormRenderer.Models.ResponseField.extend
+  validators: [
+    FormRenderer.Validators.NumberValidator
+    FormRenderer.Validators.MinMaxValidator
+    FormRenderer.Validators.IntegerValidator
+  ]
+  field_type: 'progress'
+  getValue: ->
+    $("#progressInput"+@get('id')).val()
+  setExistingValue: (x) ->
+    @set 'value', $("#progressInput"+@get('id')).val()
+
 
 for i in FormRenderer.NON_INPUT_FIELD_TYPES
   FormRenderer.Models["ResponseField#{_str.classify(i)}"] = FormRenderer.Models.NonInputResponseField.extend

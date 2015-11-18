@@ -1,4 +1,20 @@
-<input type="text"   style="border:0; color:#f6931f;width:10px; font-weight:bold;"
-       id="<%= @getDomId() %>"
-       data-rv-input='model.value' />分
-<div class="slider-range-min" data-id="<%= @getDomId() %>"></div>
+<input type="text"    style="display:none;"
+       id="progressInput<%= @model.get('id') %>"
+       data-rv-input='model.value' value="5"/>
+
+<div class="part1"  id="<%= @getDomId() %>">
+       <div class="needle-p">
+          <div class="loading-bg">
+              <div class="loading">
+                  <span class="needle"></span>
+              </div>
+          </div>
+          <div  id="dragdealer<%= @model.get('id') %>" data-id="<%= @model.get('id') %>" class="dragdealer num-p">
+              <div class="num num-l">0</div>
+              <div class="handle num-bg num-c">5</div>
+              <div class="num num-r">10</div>
+          </div>
+       </div>
+       <p><%- FormRenderer.formatHTML(@model.get('description')) %></p>
+</div>
+<div class="line-bg"></div>

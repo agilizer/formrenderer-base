@@ -7,14 +7,14 @@
     <span class='fr_min_max_guide'>
       <% if min && max: %>
         <% if min == max: %>
-          请输入 <%= min %> <%= units %>.
+          <%= FormRenderer.t.enter_exactly.replace(':num', min) %> 字符.
         <% else: %>
-          最少 <%= min %> 最大 <%= max %> <%= units %>.
+          <%= FormRenderer.t.enter_between.replace(':min', min).replace(':max', max) %> 字符.
         <% end %>
       <% else if min: %>
-        最少 <%= min %> <%= units %>.
+        <%= FormRenderer.t.enter_at_least.replace(':min', min) %> 字符.
       <% else if max: %>
-        最大 <%= max %> <%= units %>.
+        <%= FormRenderer.t.enter_up_to.replace(':max', max) %> 字符.
       <% end %>
     </span>
 
