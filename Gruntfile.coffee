@@ -7,7 +7,7 @@ module.exports = (grunt) ->
   grunt.loadNpmTasks('grunt-contrib-uglify')
   grunt.loadNpmTasks('grunt-contrib-watch')
   grunt.loadNpmTasks('grunt-contrib-clean')
-  grunt.loadNpmTasks('grunt-karma')
+ # grunt.loadNpmTasks('grunt-karma')
   grunt.loadNpmTasks('grunt-aws')
 
   grunt.initConfig
@@ -162,7 +162,9 @@ module.exports = (grunt) ->
     files = grunt.file.expand('src/i18n/*.yml')
 
     for file in files
-      language = file.match(/\/([a-z]+)\.yml/)[1]
+      indexDot = file.indexOf(".")
+      indexStart = file.lastIndexOf("/")
+      language = file.substring(indexStart+1,indexDot)
       grunt.file.write(
         "dist/i18n/#{language}.js",
         "var FormRenderer#{language.toUpperCase()} = #{JSON.stringify(grunt.file.readYAML(file)[language])};\n" +
@@ -181,4 +183,4 @@ module.exports = (grunt) ->
                                  'concat:dist', 'sass:all', 'clean:compiled']
   grunt.registerTask 'dist', ['cssmin:dist', 'uglify:dist']
   grunt.registerTask 'all', ['default', 'dist']
-  grunt.registerTask 'test', ['karma:main']
+  #grunt.registerTask 'test', ['karma:main']

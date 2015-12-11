@@ -517,7 +517,7 @@ rivets.configure({
     }
   });
 
-  FormRenderer.INPUT_FIELD_TYPES = ['identification', 'address', 'checkboxes', 'date', 'dropdown', 'email', 'file', 'number', 'progress', 'paragraph', 'phone', 'price', 'radio', 'table', 'text', 'time', 'website', 'map_marker'];
+  FormRenderer.INPUT_FIELD_TYPES = ['identification', 'address', 'checkboxes', 'date', 'dropdown', 'email', 'file', 'number', 'paragraph', 'phone', 'price', 'radio', 'table', 'text', 'time', 'website', 'map_marker'];
 
   FormRenderer.NON_INPUT_FIELD_TYPES = ['block_of_text', 'page_break', 'section_break'];
 
@@ -528,13 +528,6 @@ rivets.configure({
   FormRenderer.DEFAULT_LAT_LNG = [40.7700118, -73.9800453];
 
   FormRenderer.MAPBOX_URL = 'https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.js';
-
-  FormRenderer.FILE_TYPES = {
-    images: ['bmp', 'gif', 'jpg', 'jpeg', 'png', 'psd', 'tif', 'tiff'],
-    videos: ['m4v', 'mp4', 'mov', 'mpg'],
-    audio: ['m4a', 'mp3', 'wav'],
-    docs: ['doc', 'docx', 'pdf', 'rtf', 'txt']
-  };
 
   FormRenderer.ADD_ROW_LINK = '+ Add another row';
 
@@ -630,7 +623,7 @@ rivets.configure({
 }).call(this);
 
 (function() {
-  FormRenderer.VERSION = '0.7.0';
+  FormRenderer.VERSION = '0.7.6';
 
 }).call(this);
 
@@ -664,6 +657,14 @@ rivets.configure({
       return this.value.toLowerCase().indexOf(this.condition.value.toLowerCase()) > -1;
     };
 
+    ConditionChecker.prototype.method_not = function() {
+      return !this.method_eq();
+    };
+
+    ConditionChecker.prototype.method_does_not_contain = function() {
+      return !this.method_contains();
+    };
+
     ConditionChecker.prototype.method_gt = function() {
       return parseFloat(this.value) > parseFloat(this.condition.value);
     };
@@ -685,7 +686,7 @@ rivets.configure({
     };
 
     ConditionChecker.prototype.isValid = function() {
-      return this.responseField() && _.all(['value', 'action', 'response_field_id', 'method'], (function(_this) {
+      return this.responseField() && _.all(['value', 'response_field_id', 'method'], (function(_this) {
         return function(x) {
           return _this.condition[x];
         };
@@ -694,14 +695,10 @@ rivets.configure({
 
     ConditionChecker.prototype.isVisible = function() {
       if (this.isValid()) {
-        return this.actionBool() === this["method_" + this.condition.method]();
+        return this["method_" + this.condition.method]();
       } else {
         return true;
       }
-    };
-
-    ConditionChecker.prototype.actionBool = function() {
-      return this.condition.action === 'show';
     };
 
     ConditionChecker.prototype.responseField = function() {
@@ -1002,12 +999,19 @@ rivets.configure({
     calculateVisibility: function() {
       var prevValue;
       prevValue = !!this.isVisible;
-      this.isVisible = (!this.form_renderer ? true : this.isConditional() ? _.all(this.getConditions(), (function(_this) {
+      this.isVisible = (!this.form_renderer ? true : this.isConditional() ? _[this.conditionMethod()](this.getConditions(), (function(_this) {
         return function(c) {
           return _this.form_renderer.isConditionalVisible(c);
         };
       })(this)) : true);
       return prevValue !== this.isVisible;
+    },
+    conditionMethod: function() {
+      if (this.get('field_options.condition_method') === 'any') {
+        return 'any';
+      } else {
+        return 'all';
+      }
     },
     getSize: function() {
       return this.get('field_options.size') || 'small';
@@ -1308,9 +1312,19 @@ rivets.configure({
             return memo + num;
           }
         }, 0);
-        _results.push(this.set("columnTotals." + j, columnSum > 0 ? parseFloat(columnSum.toFixed(10)) : ''));
+        _results.push(this.set("columnTotals." + j, this.formatColumnSum(columnSum)));
       }
       return _results;
+    },
+    formatColumnSum: function(num) {
+      var parsed, precision, _ref;
+      if (num > 0) {
+        parsed = parseFloat(num.toFixed(10));
+        precision = ((_ref = ("" + parsed).split('.')[1]) != null ? _ref.length : void 0) || 0;
+        return _str.numberFormat(parsed, precision, '.', ',');
+      } else {
+        return '';
+      }
     }
   });
 
@@ -1402,17 +1416,6 @@ rivets.configure({
   FormRenderer.Models.ResponseFieldPhone = FormRenderer.Models.ResponseField.extend({
     field_type: 'phone',
     validators: [FormRenderer.Validators.PhoneValidator]
-  });
-
-  FormRenderer.Models.ResponseFieldProgress = FormRenderer.Models.ResponseField.extend({
-    validators: [FormRenderer.Validators.NumberValidator, FormRenderer.Validators.MinMaxValidator, FormRenderer.Validators.IntegerValidator],
-    field_type: 'progress',
-    getValue: function() {
-      return $("#progressInput" + this.get('id')).val();
-    },
-    setExistingValue: function(x) {
-      return this.set('value', $("#progressInput" + this.get('id')).val());
-    }
   });
 
   _ref = FormRenderer.NON_INPUT_FIELD_TYPES;
@@ -2124,7 +2127,7 @@ rivets.configure({
 
 }).call(this);
 
-var FormRendererEN = {"address":"地址","cents":"Cents","city":"城市","clear":"清空","click_to_set":"设置地址","country":"国家","dollars":"￥","enter_exactly":"输入 :num","enter_between":"输入大于 :min 小于 :max","enter_at_least":"最少输入 :min","enter_up_to":"最多输入 :max","email":"邮箱","error":"错误","error_filename":"读取文件出错","error_loading":"加载表单出错","errors":{"blank":"请选择或者输入答案.","date":"请输入正确的时间.","email":"请输入正确的邮箱地址.","identification":"请输入用户名和邮箱.","integer":"请输入一个整数.","large":"回答超出限制.","long":"回答超出限制.","number":"请输入正确的数字.","phone":"请输入正确的电话号码.","price":"请输入正确的价格.","short":"回答字数不够.","small":"回答不正确.","time":"请输入正确的时间.","us_phone":"Please enter a valid 10-digit phone number."},"finishing_up":"正在提交...","na":"N/A","name":"Name","not_supported":"对不起, 您的浏览器不支持<a href=':url?fr_not_supported=t'>:url</a> .","other":"Other","postal_code":"Postal Code","province":"Province","state":"State","state_province_region":"State / Province / Region","uploading":"Uploading...","we_accept":"We'll accept","write_here":"Write your answer here","zip_code":"ZIP Code"};
+var FormRendererEN = {"address":"Address","back_to_page":"Back to page :num","cents":"Cents","city":"City","clear":"Clear","click_to_set":"Click to set location","country":"Country","dollars":"Dollars","enter_exactly":"Enter :num","enter_between":"Enter between :min and :max","enter_at_least":"Enter at least :min","enter_up_to":"Enter up to :max","email":"Email","error":"Error","error_bar":{"errors":"Your response has <a href='#'>validation errors</a>."},"error_filename":"Error reading filename","error_loading":"Error loading form","error_saving":"Error saving","errors":{"blank":"This field can't be blank.","date":"Please enter a valid date.","email":"Please enter a valid email address.","identification":"Please enter your name and email address.","integer":"Please enter a whole number.","large":"Your answer is too large.","long":"Your answer is too long.","number":"Please enter a valid number.","phone":"Please enter a valid phone number.","price":"Please enter a valid price.","short":"Your answer is too short.","small":"Your answer is too small.","time":"Please enter a valid time.","us_phone":"Please enter a valid 10-digit phone number."},"finishing_up":"Finishing up...","loading_form":"Loading form...","na":"N/A","name":"Name","next_page":"Next page","not_supported":"Sorry, your browser does not support this embedded form. Please visit <a href=':url?fr_not_supported=t'>:url</a> to fill out this form.","other":"Other","postal_code":"Postal Code","province":"Province","saved":"Saved","saving":"Saving...","state":"State","state_province_region":"State / Province / Region","submit":"Submit","submitting":"Submitting","uploading":"Uploading...","we_accept":"We'll accept","write_here":"Write your answer here","zip_code":"ZIP Code"};
 if (typeof FormRenderer !== 'undefined') FormRenderer.t = FormRendererEN;
 if (!window.JST) {
   window.JST = {};
@@ -2281,7 +2284,9 @@ window.JST["fields/block_of_text"] = function(__obj) {
       return _safe(result);
     };
     (function() {
-      _print(_safe('<div class=\'fr_text size_'));
+      _print(_safe(JST["partials/labels"](this)));
+    
+      _print(_safe('\n\n<div class=\'fr_text size_'));
     
       _print(this.model.getSize());
     
@@ -3114,23 +3119,21 @@ window.JST["fields/radio"] = function(__obj) {
       ref = this.model.getOptions();
       for (i = j = 0, len = ref.length; j < len; i = ++j) {
         option = ref[i];
-        _print(_safe('\n    <div class="oneOption">\n    <input type=\'radio\'\n           data-rv-checked=\'model.value.selected\'\n           id="'));
-        _print(this.getDomId() + i);
+        _print(_safe('\n  <label class=\'fr_option control\'>\n    <input type=\'radio\'\n           data-rv-checked=\'model.value.selected\'\n           id="'));
+        _print(this.getDomId());
         _print(_safe('"\n           name="'));
         _print(this.getDomId());
         _print(_safe('"\n           value="'));
         _print(option.label);
-        _print(_safe('" />\n\n    <label class=\'fr_option control\' for="'));
-        _print(this.getDomId() + i);
-        _print(_safe('">\n    '));
+        _print(_safe('" />\n    '));
         _print(option.label);
-        _print(_safe('\n  </label>\n  </div>\n'));
+        _print(_safe('\n  </label>\n'));
       }
     
       _print(_safe('\n\n'));
     
       if (this.model.get('field_options.include_other_option')) {
-        _print(_safe('\n  <div class=\'fr_option fr_other_option\'>\n    <label class=\'control\' >\n      <input type=\'radio\'\n             data-rv-checked=\'model.value.selected\'\n             id="'));
+        _print(_safe('\n  <div class=\'fr_option fr_other_option\'>\n    <label class=\'control\'>\n      <input type=\'radio\'\n             data-rv-checked=\'model.value.selected\'\n             id="'));
         _print(this.getDomId());
         _print(_safe('"\n             name="'));
         _print(this.getDomId());
@@ -3187,6 +3190,10 @@ window.JST["fields/section_break"] = function(__obj) {
     };
     (function() {
       var formattedDescription;
+    
+      _print(_safe(JST["partials/labels"](this)));
+    
+      _print(_safe('\n\n'));
     
       formattedDescription = FormRenderer.formatHTML(this.model.get('field_options.description'));
     
@@ -3531,7 +3538,11 @@ window.JST["main"] = function(__obj) {
       return _safe(result);
     };
     (function() {
-      _print(_safe('<div class=\'fr_loading\'>\n  正在加载...\n</div>'));
+      _print(_safe('<div class=\'fr_loading\'>\n  '));
+    
+      _print(FormRenderer.t.loading_form);
+    
+      _print(_safe('\n</div>\n'));
     
     }).call(this);
     
@@ -3678,31 +3689,78 @@ window.JST["partials/label"] = function(__obj) {
     
       _print(_safe('">\n  '));
     
-      _print(_safe(FormRenderer.formatHTML(this.model.get('label'))));
+      _print(this.model.get('label'));
     
       if (this.model.get('required')) {
         _print(_safe('&nbsp;<abbr class=\'fr_required\' title=\'required\'>*</abbr>'));
       }
     
-      _print(_safe('\n\n  '));
+      _print(_safe('\n  '));
     
-      if (this.showLabels) {
-        _print(_safe('\n    '));
-        if (this.model.get('blind')) {
-          _print(_safe('\n      <span class=\'label\'>Blind</span>\n    '));
-        }
-        _print(_safe('\n    '));
-        if (this.model.get('admin_only')) {
-          _print(_safe('\n      <span class=\'label\'>Hidden</span>\n    '));
-        }
-        _print(_safe('\n    '));
-        if (this.model.isConditional()) {
-          _print(_safe('\n      <span class=\'label\'>Hidden until rules are met</span>\n    '));
-        }
-        _print(_safe('\n  '));
-      }
+      _print(_safe(JST["partials/labels"](this)));
     
       _print(_safe('\n</label>\n'));
+    
+    }).call(this);
+    
+    return __out.join('');
+  }).call((function() {
+    var obj = {
+      escape: function(value) {
+        return ('' + value)
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      },
+      safe: _safe
+    }, key;
+    for (key in __obj) obj[key] = __obj[key];
+    return obj;
+  })());
+};
+
+if (!window.JST) {
+  window.JST = {};
+}
+window.JST["partials/labels"] = function(__obj) {
+  var _safe = function(value) {
+    if (typeof value === 'undefined' && value == null)
+      value = '';
+    var result = new String(value);
+    result.ecoSafe = true;
+    return result;
+  };
+  return (function() {
+    var __out = [], __self = this, _print = function(value) {
+      if (typeof value !== 'undefined' && value != null)
+        __out.push(value.ecoSafe ? value : __self.escape(value));
+    }, _capture = function(callback) {
+      var out = __out, result;
+      __out = [];
+      callback.call(this);
+      result = __out.join('');
+      __out = out;
+      return _safe(result);
+    };
+    (function() {
+      if (this.showLabels) {
+        _print(_safe('\n  '));
+        if (this.model.get('blind')) {
+          _print(_safe('\n    <span class=\'label\'>Blind</span>\n  '));
+        }
+        _print(_safe('\n  '));
+        if (this.model.get('admin_only')) {
+          _print(_safe('\n    <span class=\'label\'> </span>\n  '));
+        }
+        _print(_safe('\n  '));
+        if (this.model.isConditional()) {
+          _print(_safe('\n    <span class=\'label\'>Hidden until rules are met</span>\n  '));
+        }
+        _print(_safe('\n'));
+      }
+    
+      _print(_safe('\n'));
     
     }).call(this);
     
@@ -3813,21 +3871,29 @@ window.JST["partials/length_validations"] = function(__obj) {
           if (min === max) {
             _print(_safe('\n          '));
             _print(FormRenderer.t.enter_exactly.replace(':num', min));
-            _print(_safe(' 字符.\n        '));
+            _print(_safe(' '));
+            _print(units);
+            _print(_safe('.\n        '));
           } else {
             _print(_safe('\n          '));
             _print(FormRenderer.t.enter_between.replace(':min', min).replace(':max', max));
-            _print(_safe(' 字符.\n        '));
+            _print(_safe(' '));
+            _print(units);
+            _print(_safe('.\n        '));
           }
           _print(_safe('\n      '));
         } else if (min) {
           _print(_safe('\n        '));
           _print(FormRenderer.t.enter_at_least.replace(':min', min));
-          _print(_safe(' 字符.\n      '));
+          _print(_safe(' '));
+          _print(units);
+          _print(_safe('.\n      '));
         } else if (max) {
           _print(_safe('\n        '));
           _print(FormRenderer.t.enter_up_to.replace(':max', max));
-          _print(_safe(' 字符.\n      '));
+          _print(_safe(' '));
+          _print(units);
+          _print(_safe('.\n      '));
         }
         _print(_safe('\n    </span>\n\n    '));
         _print(_safe(JST["partials/length_counter"](this)));
@@ -4138,11 +4204,17 @@ window.JST["plugins/bottom_bar"] = function(__obj) {
       if (indexOf.call(this.form_renderer.options.plugins, 'Autosave') >= 0) {
         _print(_safe('\n    <div class=\'fr_bottom_l\'>\n      '));
         if (this.form_renderer.state.get('hasServerErrors')) {
-          _print(_safe('\n        保存出错\n      '));
+          _print(_safe('\n        '));
+          _print(FormRenderer.t.error_saving);
+          _print(_safe('\n      '));
         } else if (this.form_renderer.state.get('hasChanges')) {
-          _print(_safe('\n        正在保存...\n      '));
+          _print(_safe('\n        '));
+          _print(FormRenderer.t.saving);
+          _print(_safe('\n      '));
         } else {
-          _print(_safe('\n        保存成功\n      '));
+          _print(_safe('\n        '));
+          _print(FormRenderer.t.saved);
+          _print(_safe('\n      '));
         }
         _print(_safe('\n    </div>\n  '));
       }
@@ -4152,8 +4224,8 @@ window.JST["plugins/bottom_bar"] = function(__obj) {
       if (!this.form_renderer.isFirstPage()) {
         _print(_safe('\n      <button data-fr-previous-page class=\''));
         _print(FormRenderer.BUTTON_CLASS);
-        _print(_safe('\'>\n        返回 '));
-        _print(this.form_renderer.previousPage());
+        _print(_safe('\'>\n        '));
+        _print(FormRenderer.t.back_to_page.replace(':num', this.form_renderer.previousPage()));
         _print(_safe('\n      </button>\n    '));
       }
     
@@ -4162,15 +4234,17 @@ window.JST["plugins/bottom_bar"] = function(__obj) {
       if (this.form_renderer.state.get('submitting')) {
         _print(_safe('\n      <button disabled class=\''));
         _print(FormRenderer.BUTTON_CLASS);
-        _print(_safe('\'>\n        正在提交...\n      </button>\n    '));
+        _print(_safe('\'>\n        '));
+        _print(FormRenderer.t.submitting);
+        _print(_safe('\n      </button>\n    '));
       } else {
         _print(_safe('\n      <button data-fr-next-page class=\''));
         _print(FormRenderer.BUTTON_CLASS);
         _print(_safe('\'>\n        '));
         if (this.form_renderer.isLastPage() || !this.form_renderer.options.enablePages) {
-          _print(_safe('提交'));
+          _print(FormRenderer.t.submit);
         } else {
-          _print(_safe('下一页'));
+          _print(FormRenderer.t.next_page);
         }
         _print(_safe('\n      </button>\n    '));
       }
@@ -4221,7 +4295,9 @@ window.JST["plugins/error_bar"] = function(__obj) {
     };
     (function() {
       if (!this.form_renderer.areAllPagesValid()) {
-        _print(_safe('\n  <div class=\'fr_error_alert_bar\'>\n    你的回答存在<a href=\'#\'>错误</a>.\n  </div>\n'));
+        _print(_safe('\n  <div class=\'fr_error_alert_bar\'>\n    '));
+        _print(_safe(FormRenderer.t.error_bar.errors));
+        _print(_safe('\n  </div>\n'));
       }
     
       _print(_safe('\n'));

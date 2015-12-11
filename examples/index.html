@@ -1,69 +1,18 @@
 <!doctype html>
-<html lang="zh">
+<html>
 <head>
   <title>formrenderer-base</title>
-  <meta charset="utf-8" />
+  <link rel="stylesheet" href="https://api.tiles.mapbox.com/mapbox.js/v2.1.4/mapbox.css" />
   <link rel="stylesheet" href="css/preview.css" />
   <link rel="stylesheet" href="../dist/formrenderer.uncompressed.css" />
-  <style>
-    .loading{width:50%;height:20px; background:#26a7de; position:relative; z-index:2}
-    .loading-bg{width:100%;height:20px; background:#f2efef; margin:10px 0}
-    .needle{width:5px; height:32px;background:#26a7de; position:absolute; top:-6px; right:0; z-index:5; display:inline-block}
-    .fr_response_field label{ color:#036EB5; font-size:24px}
-    .line-bg{ background:url(../dist/images/line-bg.png) no-repeat; width:558px; height:7px;margin:30px auto}
-    .part1 p{font-size:20px; color:#999}
-    .num{ background:#eaeaea; text-align:center; color:#999;width:30px;height:30px; line-height:30px; display:inline-block}
-    .num-bg{ background:url(../dist/images/num-bg.png) no-repeat;width:30px; height:36px; line-height:36px; color:#fff; text-align:center;display:inline-block}
-    .num-r{ position:absolute; right:0;}
-    .num-l{ left:0;}
-    .num-p{ width:100%; margin:0 auto; position:relative}
-    .num-c{ position:absolute; right:47.5%}
-    .needle-p { margin:30px 0}
-
-
-    .fr_field_wrapper label {
-      cursor: pointer;
-      display: inline-block;
-      font-size: 13px;
-      margin-right: 15px;
-      padding-left: 25px;
-      position: relative;
-    }
-    .fr_field_wrapper input[type="radio"] {
-      display: none;
-    }
-    .fr_field_wrapper label:before {
-      background-color: #a06b63;
-      bottom: 1px;
-      box-shadow: 0 2px 3px 0 rgba(0, 0, 0, 0.3) inset, 0 1px 0 0 rgba(255, 255, 255, 0.8);
-      content: "";
-      display: inline-block;
-      height: 16px;
-      left: 0;
-      margin-right: 10px;
-      position: absolute;
-      width: 16px;
-    }
-    .fr_field_wrapper label:before {
-      border-radius: 8px;
-    }
-    .fr_field_wrapper input[type="radio"]:checked + label:before {
-      color: #f3f3f3;
-      content: "•";
-      font-size: 30px;
-      line-height: 18px;
-      text-align: center;
-    }
-
-
-  </style>
 </head>
 <body>
   <div id='container'>
     <select id='lib' class='config_select'>
       <option value=''>No library</option>
       <option value='css/cardinal.css'>Cardinal</option>
-
+      <option value='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css'>Bootstrap</option>
+      <option value='https://cdn.jsdelivr.net/foundation/5.0.2/css/foundation.min.css'>Foundation</option>
     </select>
 
     <select id='fixture' class='config_select'>
@@ -76,6 +25,7 @@
       <option value='CONDITIONAL'>Conditional</option>
       <option value='CONDITIONAL_TWO'>Conditional 2</option>
       <option value='CONDITIONAL_THREE'>Conditional 3</option>
+      <option value='CONDITIONAL_THREE_ANY'>Conditional 3 (any)</option>
       <option value='BLANK'>Blank</option>
       <option value='BLANK_IDENTIFIED'>Blank (identified)</option>
       <option value='SIZES'>All sizes</option>
@@ -88,34 +38,14 @@
     <form data-formrenderer></form>
   </div>
 
-  <script src="../dist/jQuery.js"></script>
+  <script src="https://code.jquery.com/jquery-1.11.2.min.js"></script>
+
   <script src="../dist/formrenderer.uncompressed.js"></script>
+  <script src="../dist/i18n/zh.js"></script>
   <script src="../test/fixtures/internal.js"></script>
-  <script src="../dist/zepto.min.js"></script>
-  <script src="../dist/touch.js"></script>
-  <script src="../dist/dragdealer.min.js"></script>
+  <!-- Uncomment to test with another language: -->
+  <!-- <script src="../dist/i18n/fr.js"></script> -->
   <script src="js/store.js"></script>
   <script src="js/preview.js"></script>
-<script>
-  $(document).ready(function() {
-    $(".dragdealer").each(function(){
-      new Dragdealer($(this).attr("id"), {
-        x : 0.5,
-        steps : 10,
-        animationCallback : function(x, y) {
-          $(this.wrapper).parent().find(".loading")
-                  .width((100 * x) + "%");
-          $(this.handle).html(Math.round(x * 10));
-          var dataId = $(this.wrapper).attr("data-id");
-          $("#progressInput"+dataId).val(Math.round(x * 10));
-          $("#progressInput"+dataId).trigger("onchange")
-        }
-      });
-    })
-
-  });
-
-
-</script>
 </body>
 </html>

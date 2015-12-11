@@ -2,11 +2,11 @@
   <% if 'Autosave' in @form_renderer.options.plugins: %>
     <div class='fr_bottom_l'>
       <% if @form_renderer.state.get('hasServerErrors'): %>
-        保存出错
+        <%= FormRenderer.t.error_saving %>
       <% else if @form_renderer.state.get('hasChanges'): %>
-        正在保存...
+        <%= FormRenderer.t.saving %>
       <% else: %>
-        保存成功
+        <%= FormRenderer.t.saved %>
       <% end %>
     </div>
   <% end %>
@@ -14,17 +14,17 @@
   <div class='fr_bottom_r'>
     <% if !@form_renderer.isFirstPage(): %>
       <button data-fr-previous-page class='<%= FormRenderer.BUTTON_CLASS %>'>
-        返回 <%= @form_renderer.previousPage() %>
+        <%= FormRenderer.t.back_to_page.replace(':num', @form_renderer.previousPage()) %>
       </button>
     <% end %>
 
     <% if @form_renderer.state.get('submitting'): %>
       <button disabled class='<%= FormRenderer.BUTTON_CLASS %>'>
-        正在提交...
+        <%= FormRenderer.t.submitting %>
       </button>
     <% else: %>
       <button data-fr-next-page class='<%= FormRenderer.BUTTON_CLASS %>'>
-        <% if (@form_renderer.isLastPage() || !@form_renderer.options.enablePages): %>提交<% else: %>下一页<% end %>
+        <% if (@form_renderer.isLastPage() || !@form_renderer.options.enablePages): %><%= FormRenderer.t.submit %><% else: %><%= FormRenderer.t.next_page %><% end %>
       </button>
     <% end %>
   </div>

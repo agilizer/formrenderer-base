@@ -104,13 +104,19 @@ FormRenderer.Models.ResponseField = Backbone.DeepModel.extend
         true
       else
         if @isConditional()
-          _.all @getConditions(), (c) =>
+          _[@conditionMethod()] @getConditions(), (c) =>
             @form_renderer.isConditionalVisible(c)
         else
           true
     )
 
     prevValue != @isVisible
+
+  conditionMethod: ->
+    if @get('field_options.condition_method') == 'any'
+      'any'
+    else
+      'all'
 
   getSize: ->
     @get('field_options.size') || 'small'
@@ -325,7 +331,15 @@ FormRenderer.Models.ResponseFieldTable = FormRenderer.Models.ResponseField.exten
         if _.isNaN(num) then memo else memo + num
       , 0
 
-      @set "columnTotals.#{j}", if columnSum > 0 then parseFloat(columnSum.toFixed(10)) else ''
+      @set "columnTotals.#{j}", @formatColumnSum(columnSum)
+
+  formatColumnSum: (num) ->
+    if num > 0
+      parsed = parseFloat(num.toFixed(10))
+      precision = "#{parsed}".split('.')[1]?.length || 0
+      _str.numberFormat(parsed, precision, '.', ',')
+    else
+      ''
 
 FormRenderer.Models.ResponseFieldFile = FormRenderer.Models.ResponseField.extend
   field_type: 'file'
@@ -397,20 +411,6 @@ FormRenderer.Models.ResponseFieldPhone = FormRenderer.Models.ResponseField.exten
   validators: [
     FormRenderer.Validators.PhoneValidator
   ]
-
-
-FormRenderer.Models.ResponseFieldProgress = FormRenderer.Models.ResponseField.extend
-  validators: [
-    FormRenderer.Validators.NumberValidator
-    FormRenderer.Validators.MinMaxValidator
-    FormRenderer.Validators.IntegerValidator
-  ]
-  field_type: 'progress'
-  getValue: ->
-    $("#progressInput"+@get('id')).val()
-  setExistingValue: (x) ->
-    @set 'value', $("#progressInput"+@get('id')).val()
-
 
 for i in FormRenderer.NON_INPUT_FIELD_TYPES
   FormRenderer.Models["ResponseField#{_str.classify(i)}"] = FormRenderer.Models.NonInputResponseField.extend
